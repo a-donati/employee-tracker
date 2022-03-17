@@ -108,10 +108,10 @@ employeeSearch();
      LEFT JOIN roles ON employees.role_id = roles.id 
      LEFT JOIN department ON roles.department_id = department.id 
      LEFT JOIN employees m ON employees.manager_id = m.id`
-    db.query(sql, (err, res) => {
+    db.query(sql, (err, data) => {
         if(err) throw err;
         console.log('\n');
-        console.table(res);
+        console.table(data);
         employeeSearch();
 
     })
@@ -134,9 +134,8 @@ const viewEmployeesByDept = () => {
             message: 'Choose a department:',
             choices: departments
         },
-
     ])
-    .then((answer) =>{
+    .then((answer) => {
         // pass in user selected answer.department into the query as WHERE clause
         const sql = `SELECT employees.id AS "Employee ID", employees.first_name AS "First Name", employees.last_name AS "Last Name", roles.title AS Role, roles.salary, CONCAT(m.first_name, " ", m.last_name) AS "Manager", department.name AS Department 
         FROM employees 
@@ -151,4 +150,140 @@ const viewEmployeesByDept = () => {
         })
     })
     })
+}
+
+const viewEmployeesByManager = () => {
+    // set managers to empty array 
+    let managers = [];
+    const sql = `SELECT CONCAT(m.first_name, " ", m.last_name) AS manager
+    FROM employees
+    LEFT JOIN employees m ON employees.manager_id = m.id`
+    db.query(sql, (err, res) => {
+        if(err) throw err;
+        // for each manager, if manager === null, delete
+        res.forEach((manager) => {
+            if(manager.manager === null){
+                console.table(res)
+                delete(manager)
+            } else {
+                console.table(res)
+                managers.push(manager.manager)
+            }
+        })
+        // pass in manager array as choices for user
+        inquirer.prompt([{
+            name: 'manager',
+            type: 'list',
+            message: 'Choose a manager:',
+            choices: managers
+        }])
+        .then(({answer}) => {
+            console.log(answer)
+            // send query to select employee data from db where first name and last name matches user selection
+            const sql = `SELECT employees.id AS "Employee ID", employees.first_name AS "First Name", employees.last_name AS "Last Name", roles.title AS "Role", roles.salary, department.name AS "Department", CONCAT(m.first_name, " ", m.last_name) AS manager
+            FROM employees
+            LEFT JOIN roles ON employees.role_id = roles.id
+            LEFT JOIN department on roles.department_id = department.id
+            LEFT JOIN employees m ON employees.manager_id = m.id
+            WHERE CONCAT(m.first_name, " ", m.last_name) = ?` 
+            db.query(sql, [answer], (err, res)=> {
+                if(err) throw err;
+                console.table(res);
+                employeeSearch();
+            })
+        })
+    })
+}
+// add employee
+const addEmployee = () => {
+    // select all roles from roles table
+    const query = `SELECT * FROM roles;`
+    db.query(query, (err, data) => {
+        if(err) throw err;
+        const rolesArray = data.map((role) => {
+            return {name: role.title, value: role.id};
+            // returns array of objects containing role title and role id
+        });
+        // console.log(rolesArray);
+        const query = `SELECT * FROM employees;`
+        db.query(query, (err, data) => {
+            if(err) throw err;
+            const employeeArray = data.map((employee)=> {
+                // returns array of objects containing employee first and last name, and employee id
+                return {
+                    name: `${employee.first_name} ${employee.last_name}`,
+                    value: employee.id
+                };
+            });
+            // add 'None' option into array of options which will add null value as in "No manager"
+            const noneOption = {name: 'None', value: null};
+            employeeArray.unshift(noneOption);
+
+            inquirer.prompt([{
+                type: "input",
+                message: "Enter employee's first name:",
+                name: "firstName",
+            },
+            {
+                type: "input",
+                message: "Enter employee's last name:",
+                name: "lastName",
+            },
+            {   // prompt user and use rolesArray as role options
+                type: "list",
+                message: "Select the employee's role:",
+                choices: rolesArray,
+                name: "role",
+            },
+            {   // use employeeArray to choose manager name
+                type: "list",
+                message: "Select the employee's manager:",
+                choices: employeeArray,
+                name: "manager",
+            }
+        ])
+        // destructure user response
+        .then(({ firstName, lastName, role, manager }) => {
+            const queryString = `INSERT INTO employees
+            (first_name, last_name, role_id, manager_id)
+            VALUE (?, ?, ?, ?);`
+            db.query(queryString, [firstName, lastName, role, manager], (err, data) => {
+                if(err) throw err;
+                console.log('Employee added.');
+                employeeSearch();
+            }
+            );
+        });
+        });
+    });
+}
+
+const removeEmployee = () => {
+    const queryString = `SELECT * FROM employees`
+    db.query(queryString, (err, data) => {
+        if(err) throw err;
+        const employeeArray = data.map((employee) => {
+            return {
+                name: `${employee.first_name} ${employee.last_name}`,
+                value: employee.id,
+            };
+        });
+        console.log(employeeArray);
+        inquirer.prompt([{
+            type: 'list',
+            message: `Select employee to be deleted:`,
+            choices: employeeArray,
+            name: "employee",
+        },
+    ])
+    .then(({ employee }) => {
+        const queryString = `DELETE FROM employees
+        WHERE id = ?`;
+        db.query(queryString, [employee], (err, data) => {
+            if(err) throw err;
+            console.log('Employee has been deleted');
+            employeeSearch();
+        })
+    });
+    });
 }
