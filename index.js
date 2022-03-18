@@ -257,7 +257,7 @@ const addEmployee = () => {
         });
     });
 }
-
+// remove an employee
 const removeEmployee = () => {
     const queryString = `SELECT * FROM employees`
     db.query(queryString, (err, data) => {
@@ -291,7 +291,7 @@ const removeEmployee = () => {
     });
     });
 }
-
+// update an employees role
 const updateEmployeeRole = () => {
     const queryString = `SELECT * FROM roles`;
     db.query(queryString, (err, data) => {
@@ -341,9 +341,94 @@ const updateEmployeeRole = () => {
         });
     });
 }
-// updateEmployeeManager;
-// viewAllRoles;
-// addRole;
+// update an employee's manager
+const updateEmployeeManager = () => {
+    const queryString = `SELECT * FROM employees`
+    db.query(queryString, (err, data) => {
+        if(err) throw err;
+        // map employee data to employeeArray
+        const employeeArray = data.map((employee) => {
+            return {
+                name: `${employee.first_name} ${employee.last_name}`,
+                value: employee.id,
+            };
+        });
+        inquirer.prompt([
+            {
+                // use employeeArray for user choices
+                type: 'list',
+                choices: employeeArray,
+                message: 'Choose employee to update',
+                name: 'employee'
+            },
+            {
+                type: 'list',
+                choices: employeeArray,
+                message: `Select the employee's new manager:`,
+                name: 'manager'
+            }
+        ])
+        .then(({ employee, manager }) => {
+            const queryString = `UPDATE employee
+            SET manager_id = ?
+            WHERE id = ?`
+            db.query(queryString, [manager, employee], (err, data) =>{
+                if(err) throw err;
+                console.log(`Employee has been updated`)
+            })
+        });
+    });
+}
+// view all roles
+const viewAllRoles = () => {
+ const queryString = `SELECT roles.title AS "Roles" FROM roles`
+ db.query(queryString, (err, data) => {
+     if(err) throw err;
+     console.table(data);
+     employeeSearch();
+ });
+}
+// add a role
+const addRole = () => {
+    const queryString = `SELECT * FROM departments`
+    db.query(queryString, (err, data) => {
+        if(err) throw err;
+        const departmentsArray = data.map((department) => {
+            return {
+                name: department.name,
+                value: department.id
+            }
+        });
+        inquirer.prompt([
+            {
+                type: 'input',
+                message: 'Please enter the role title',
+                name: 'title',
+            },
+            {
+                type: 'input',
+                message: 'Please enter the role salary:',
+                name: "salary",
+            },
+            {
+                type: 'list',
+                choices: departmentsArray,
+                message: 'Please select a department:',
+                name: 'department_id',
+            },
+        ])
+        .then(({ title, salary, department_id }) => {
+            const queryString = `INSERT INTO role(title, salary, department_id)
+            VALUE (?, ?, ?)`
+            db.query(queryString, [title, salary, department_id], (err, data) => {
+                if(err) throw err;
+                console.log('Your department has been created');
+                employeeSearch();
+            });
+        });
+    });
+}
+
 // removeRole;
 // viewAllDept;
 // addDept;
