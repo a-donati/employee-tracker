@@ -160,50 +160,19 @@ const viewEmployeesByDept = () => {
             });
     });
 };
-
+// view all employees by manager
 const viewEmployeesByManager = () => {
-    // set managers to empty array
-    let managers = [];
-    const query = `SELECT CONCAT(m.first_name, " ", m.last_name) AS manager
-    FROM employees
-    LEFT JOIN employees m ON employees.manager_id = m.id`;
-    db.query(query, (err, res) => {
+    // query table to display employee, title, department and manager / if null for employees.manager_id - person is manager
+    const queryString = `SELECT CONCAT(employees.first_name," ", employees.last_name) as 'Employee', roles.title as 'Title', department.name as 'Department', IFNULL(CONCAT(m.first_name," ", m.last_name),'Is Manager') as 'Manager' 
+        FROM employees
+        LEFT JOIN employees m on m.id = employees.manager_id
+        INNER JOIN roles on employees.roles_id = roles.id
+        INNER JOIN department on roles.department_id = department.id;
+    `;
+    db.query(queryString, (err, data) => {
         if (err) throw err;
-        // for each manager, if manager === null, delete
-        res.forEach((manager) => {
-            if (manager.manager === null) {
-                delete manager;
-                // console.table(res)
-            } else {
-                // console.table(res)
-                managers.push(manager.manager);
-            }
-        });
-        // pass in manager array as choices for user
-        inquirer
-            .prompt([
-                {
-                    name: "manager",
-                    type: "list",
-                    message: "Choose a manager:",
-                    choices: managers,
-                },
-            ])
-            .then((answer) => {
-                console.log(answer.manager);
-                // send query to select employee data from db where first name and last name matches user selection
-                const sql = `SELECT employees.id AS "Employee ID", employees.first_name AS "First Name", employees.last_name AS "Last Name", roles.title AS "Role", roles.salary, department.name AS "Department", CONCAT(m.first_name, " ", m.last_name) AS manager
-            FROM employees
-            LEFT JOIN roles ON employees.roles_id = roles.id
-            LEFT JOIN department on roles.department_id = department.id
-            LEFT JOIN employees m ON employees.manager_id = m.id
-            WHERE CONCAT(m.first_name, " ", m.last_name) = ?`;
-                db.query(sql, [answer.manager], (err, res) => {
-                    if (err) throw err;
-                    console.table(res);
-                    employeeSearch();
-                });
-            });
+        console.table(data);
+        employeeSearch();
     });
 };
 // add employee
@@ -263,15 +232,11 @@ const addEmployee = () => {
                     const query = `INSERT INTO employees
             (first_name, last_name, roles_id, manager_id)
             VALUE (?, ?, ?, ?);`;
-                    db.query(
-                        query,
-                        [firstName, lastName, role, manager],
-                        (err, data) => {
-                            if (err) throw err;
-                            console.log("Employee added.");
-                            employeeSearch();
-                        }
-                    );
+                    db.query(query, [firstName, lastName, role, manager], (err, data) => {
+                        if (err) throw err;
+                        console.log("Employee added.");
+                        employeeSearch();
+                    });
                 });
         });
     });
@@ -299,7 +264,6 @@ const removeEmployee = () => {
                 },
             ])
             .then(({ employee }) => {
-                console.log(employee);
                 // where id matches employee, employee will be deleted
                 const query = `DELETE FROM employees
         WHERE id = ?`;
@@ -504,7 +468,7 @@ const addDept = () => {
         .then((answer) => {
             const query = `INSERT INTO department(name)
         VALUES (?)`;
-        // use employee entered data to insert new department name
+            // use employee entered data to insert new department name
             db.query(query, [answer.name], (err, data) => {
                 if (err) throw err;
                 console.log(`Department has been created`);
