@@ -18,13 +18,13 @@ VALUES
 
 INSERT INTO employees (first_name, last_name, role_id, manager_id)
 VALUES
-("Naomi", "Toselli", 1, null),
-("Shiori", "Abbatelli", 2, 1),
-("Loreto", "Provenza", 3, null),
-("Masami", "Sakamoto", 4, 3),
-("Hikaru", "Montanari", 5, null),
-("Tsubasa", "Alagona", 6, 4),
-("Hifumi", "Campo", 6, 4),
-("Odalis", "Villar", 7, null),
-("Minoru", "Accursio", 8, 8),
-("Tomomi", "Marconil", 4, 3)
+        ("Naomi", "Toselli", 1, null),
+        ("Shiori", "Abbatelli", 2, 1),
+        ("Loreto", "Provenza", 3, null),
+        ("Masami", "Sakamoto", 4, 3),
+        ("Hikaru", "Montanari", 5, null),
+        ("Tsubasa", "Alagona", 6, 4),
+        ("Hifumi", "Campo", 6, 4),
+        ("Odalis", "Villar", 7, null),
+        ("Minoru", "Accursio", 8, 8),
+        ("Tomomi", "Marconil", 4, 3)
