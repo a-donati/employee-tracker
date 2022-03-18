@@ -110,12 +110,12 @@ employeeSearch();
 // view all employees in the db
 const viewAllEmployees = () => {
     //  send query to database to select desired column names from tables and join on common IDs
-    const sql = `SELECT employees.id AS "employee id", employees.first_name, employees.last_name, roles.title, department.name AS department, roles.salary, CONCAT (m.first_name, " ", m.last_name) AS manager 
+    const query = `SELECT employees.id AS "employee id", employees.first_name, employees.last_name, roles.title, department.name AS department, roles.salary, CONCAT (m.first_name, " ", m.last_name) AS manager 
      FROM employees 
      LEFT JOIN roles ON employees.role_id = roles.id 
      LEFT JOIN department ON roles.department_id = department.id 
      LEFT JOIN employees m ON employees.manager_id = m.id`;
-    db.query(sql, (err, data) => {
+    db.query(query, (err, data) => {
         if (err) throw err;
         console.log("\n");
         console.table(data);
@@ -126,8 +126,8 @@ const viewAllEmployees = () => {
 const viewEmployeesByDept = () => {
     // set departments to an empty array
     let departments = [];
-    const sql = "SELECT name FROM department";
-    db.query(sql, (err, res) => {
+    const query = "SELECT name FROM department";
+    db.query(query, (err, res) => {
         if (err) throw err;
         // for each department name, push name to departments array
         res.forEach((name) => {
@@ -164,10 +164,10 @@ const viewEmployeesByDept = () => {
 const viewEmployeesByManager = () => {
     // set managers to empty array
     let managers = [];
-    const sql = `SELECT CONCAT(m.first_name, " ", m.last_name) AS manager
+    const query = `SELECT CONCAT(m.first_name, " ", m.last_name) AS manager
     FROM employees
     LEFT JOIN employees m ON employees.manager_id = m.id`;
-    db.query(sql, (err, res) => {
+    db.query(query, (err, res) => {
         if (err) throw err;
         // for each manager, if manager === null, delete
         res.forEach((manager) => {
@@ -209,7 +209,7 @@ const viewEmployeesByManager = () => {
 // add employee
 const addEmployee = () => {
     // select all roles from roles table
-    const query = `SELECT * FROM roles;`;
+    const query = `SELECT * FROM roles`;
     db.query(query, (err, data) => {
         if (err) throw err;
         const rolesArray = data.map((role) => {
@@ -260,11 +260,11 @@ const addEmployee = () => {
                 ])
                 // destructure user response
                 .then(({ firstName, lastName, role, manager }) => {
-                    const queryString = `INSERT INTO employees
+                    const query = `INSERT INTO employees
             (first_name, last_name, role_id, manager_id)
             VALUE (?, ?, ?, ?);`;
                     db.query(
-                        queryString,
+                        query,
                         [firstName, lastName, role, manager],
                         (err, data) => {
                             if (err) throw err;
@@ -278,8 +278,8 @@ const addEmployee = () => {
 };
 // remove an employee
 const removeEmployee = () => {
-    const queryString = `SELECT * FROM employees`;
-    db.query(queryString, (err, data) => {
+    const query = `SELECT * FROM employees`;
+    db.query(query, (err, data) => {
         if (err) throw err;
         // pass in employees, map to employeeArray
         const employeeArray = data.map((employee) => {
@@ -288,7 +288,6 @@ const removeEmployee = () => {
                 value: employee.id,
             };
         });
-        console.log(employeeArray);
         // use employeeArray for user choices
         inquirer
             .prompt([
@@ -302,9 +301,9 @@ const removeEmployee = () => {
             .then(({ employee }) => {
                 console.log(employee);
                 // where id matches employee, employee will be deleted
-                const queryString = `DELETE FROM employees
+                const query = `DELETE FROM employees
         WHERE id = ?`;
-                db.query(queryString, [employee], (err, data) => {
+                db.query(query, [employee], (err, data) => {
                     if (err) throw err;
                     console.log("Employee has been deleted");
                     employeeSearch();
@@ -314,8 +313,8 @@ const removeEmployee = () => {
 };
 // update an employees role
 const updateEmployeeRole = () => {
-    const queryString = `SELECT * FROM roles`;
-    db.query(queryString, (err, data) => {
+    const query = `SELECT * FROM roles`;
+    db.query(query, (err, data) => {
         if (err) throw err;
         // map roles to new array with role.title and role.id data
         const rolesArray = data.map((role) => {
@@ -324,8 +323,8 @@ const updateEmployeeRole = () => {
                 value: role.id,
             };
         });
-        const queryString = `SELECT * FROM employees`;
-        db.query(queryString, (err, data) => {
+        const query = `SELECT * FROM employees`;
+        db.query(query, (err, data) => {
             if (err) throw err;
             const employeeArray = data.map((employee) => {
                 return {
@@ -351,10 +350,10 @@ const updateEmployeeRole = () => {
                 ])
                 // destructure data, pass in parameters to the query string
                 .then(({ employee, role }) => {
-                    const queryString = `UPDATE employees
+                    const query = `UPDATE employees
             SET role_id = ?
             WHERE id = ?`;
-                    db.query(queryString, [role, employee], (err, data) => {
+                    db.query(query, [role, employee], (err, data) => {
                         if (err) throw err;
                         console.log(`Employee role has been updated`);
                         employeeSearch();
@@ -365,8 +364,8 @@ const updateEmployeeRole = () => {
 };
 // update an employee's manager
 const updateEmployeeManager = () => {
-    const queryString = `SELECT * FROM employees`;
-    db.query(queryString, (err, data) => {
+    const query = `SELECT * FROM employees`;
+    db.query(query, (err, data) => {
         if (err) throw err;
         // map employee data to employeeArray
         const employeeArray = data.map((employee) => {
@@ -392,10 +391,10 @@ const updateEmployeeManager = () => {
                 },
             ])
             .then(({ employee, manager }) => {
-                const queryString = `UPDATE employee
+                const query = `UPDATE employee
             SET manager_id = ?
             WHERE id = ?`;
-                db.query(queryString, [manager, employee], (err, data) => {
+                db.query(query, [manager, employee], (err, data) => {
                     if (err) throw err;
                     console.log(`Employee has been updated`);
                 });
@@ -404,10 +403,10 @@ const updateEmployeeManager = () => {
 };
 // view all roles
 const viewAllRoles = () => {
-    const queryString = `SELECT roles.id, roles.title AS "Roles", roles.salary, department.name AS "Department"
+    const query = `SELECT roles.id, roles.title AS "Roles", roles.salary, department.name AS "Department"
   FROM roles
   LEFT JOIN department ON roles.department_id = department.id`;
-    db.query(queryString, (err, data) => {
+    db.query(query, (err, data) => {
         if (err) throw err;
         console.table(data);
         employeeSearch();
@@ -415,8 +414,8 @@ const viewAllRoles = () => {
 };
 // add a role
 const addRole = () => {
-    const queryString = `SELECT * FROM department`;
-    db.query(queryString, (err, data) => {
+    const query = `SELECT * FROM department`;
+    db.query(query, (err, data) => {
         if (err) throw err;
         const departmentsArray = data.map((department) => {
             return {
@@ -444,9 +443,9 @@ const addRole = () => {
                 },
             ])
             .then(({ title, salary, department_id }) => {
-                const queryString = `INSERT INTO roles (title, salary, department_id)
+                const query = `INSERT INTO roles (title, salary, department_id)
             VALUE (?, ?, ?)`;
-                db.query(queryString, [title, salary, department_id], (err, data) => {
+                db.query(query, [title, salary, department_id], (err, data) => {
                     if (err) throw err;
                     console.log("Your department has been created");
                     employeeSearch();
@@ -454,10 +453,10 @@ const addRole = () => {
             });
     });
 };
-
+// remove role
 const removeRole = () => {
-    const queryString = `SELECT * FROM roles`;
-    db.query(queryString, (err, data) => {
+    const query = `SELECT * FROM roles`;
+    db.query(query, (err, data) => {
         if (err) throw err;
         const roleArray = data.map((role) => {
             return {
@@ -476,9 +475,9 @@ const removeRole = () => {
                 },
             ])
             .then(({ role }) => {
-                const queryString = `DELETE FROM roles 
+                const query = `DELETE FROM roles 
             WHERE roles.id = ?`;
-                db.query(queryString, [role], (err, data) => {
+                db.query(query, [role], (err, data) => {
                     if (err) throw err;
                     console.log("Role removed");
                     employeeSearch();
@@ -486,16 +485,16 @@ const removeRole = () => {
             });
     });
 };
-
+// view all departments
 const viewAllDept = () => {
-    const queryString = `SELECT * FROM department`;
-    db.query(queryString, (err, data) => {
+    const query = `SELECT * FROM department`;
+    db.query(query, (err, data) => {
         if (err) throw err;
         console.table(data);
         employeeSearch();
     });
 };
-
+// add a new department
 const addDept = () => {
     inquirer
         .prompt([
@@ -506,19 +505,20 @@ const addDept = () => {
             },
         ])
         .then((answer) => {
-            const queryString = `INSERT INTO department(name)
+            const query = `INSERT INTO department(name)
         VALUES (?)`;
-            db.query(queryString, [answer.name], (err, data) => {
+        // use employee entered data to insert new department name
+            db.query(query, [answer.name], (err, data) => {
                 if (err) throw err;
                 console.log(`Department has been created`);
                 employeeSearch();
             });
         });
 };
-
+// remove department
 const removeDept = () => {
-    const queryString = `SELECT * FROM department`;
-    db.query(queryString, (err, data) => {
+    const query = `SELECT * FROM department`;
+    db.query(query, (err, data) => {
         if (err) throw err;
         const departmentsArray = data.map((department) => {
             return {
@@ -529,6 +529,7 @@ const removeDept = () => {
         inquirer
             .prompt([
                 {
+                    // use departmentsArray for user choices
                     type: "list",
                     choices: departmentsArray,
                     message: "Please select a department to delete:",
@@ -536,9 +537,10 @@ const removeDept = () => {
                 },
             ])
             .then(({ department }) => {
-                const queryString = `DELETE FROM department 
+                // pass in user selection to the query
+                const query = `DELETE FROM department 
             WHERE department.id = ?`;
-                db.query(queryString, [department], (err, data) => {
+                db.query(query, [department], (err, data) => {
                     if (err) throw err;
                     console.log("Department has been deleted");
                     employeeSearch();
