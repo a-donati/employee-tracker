@@ -464,7 +464,6 @@ const removeRole = () => {
                 value: role.id,
             };
         });
-        console.log(roleArray);
         inquirer
             .prompt([
                 {
