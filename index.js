@@ -262,6 +262,7 @@ const removeEmployee = () => {
     const queryString = `SELECT * FROM employees`
     db.query(queryString, (err, data) => {
         if(err) throw err;
+        // pass in employees, map to employeeArray
         const employeeArray = data.map((employee) => {
             return {
                 name: `${employee.first_name} ${employee.last_name}`,
@@ -269,6 +270,7 @@ const removeEmployee = () => {
             };
         });
         console.log(employeeArray);
+        // use employeeArray for user choices
         inquirer.prompt([{
             type: 'list',
             message: `Select employee to be deleted:`,
@@ -277,6 +279,8 @@ const removeEmployee = () => {
         },
     ])
     .then(({ employee }) => {
+        console.log(employee)
+        // where id matches employee, employee will be deleted
         const queryString = `DELETE FROM employees
         WHERE id = ?`;
         db.query(queryString, [employee], (err, data) => {
@@ -287,3 +291,61 @@ const removeEmployee = () => {
     });
     });
 }
+
+const updateEmployeeRole = () => {
+    const queryString = `SELECT * FROM roles`;
+    db.query(queryString, (err, data) => {
+        if(err) throw err;
+        // map roles to new array with role.title and role.id data
+        const rolesArray = data.map((role) => {
+            return {
+                name: role.title,
+                value: role.id
+            }
+        });
+        const queryString = `SELECT * FROM employees`
+        db.query(queryString, (err, data)=> {
+            if(err) throw err;
+            const employeeArray = data.map((employee) => {
+                return {
+                    name: `${employee.first_name} ${employee.last_name}`,
+                    value: employee.id,
+                };
+            });
+            inquirer.prompt([
+                { 
+                    // use mapped employeeArray and rolesArray for userchoices
+                    type: 'list',
+                    message: 'Choose employee to update:',
+                    name: "employee",
+                    choices: employeeArray,
+            },
+            {
+                type: 'list',
+                message: 'Choose role to assign:',
+                name: 'role',
+                choices: rolesArray,
+            }
+        ])
+        // destructure data, pass in parameters to the query string
+        .then(( { employee, role } )=>{
+            const queryString = `UPDATE employees
+            SET role_id = ?
+            WHERE id = ?`
+            db.query(queryString, [role, employee], (err, data) => {
+                if(err) throw err;
+                console.log(`Employee role has been updated`);
+                employeeSearch();
+            })
+        });
+        });
+    });
+}
+// updateEmployeeManager;
+// viewAllRoles;
+// addRole;
+// removeRole;
+// viewAllDept;
+// addDept;
+// removeDept;
+// viewBudget;
