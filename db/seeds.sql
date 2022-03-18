@@ -16,7 +16,7 @@ VALUES
         ("Legal Team Lead", 25000, 4),
         ("Lawyer", 190000, 4);
 
-INSERT INTO employees (first_name, last_name, role_id, manager_id)
+INSERT INTO employees (first_name, last_name, roles_id, manager_id)
 VALUES
         ("Naomi", "Toselli", 1, null),
         ("Shiori", "Abbatelli", 2, 1),

@@ -112,7 +112,7 @@ const viewAllEmployees = () => {
     //  send query to database to select desired column names from tables and join on common IDs
     const query = `SELECT employees.id AS "employee id", employees.first_name, employees.last_name, roles.title, department.name AS department, roles.salary, CONCAT (m.first_name, " ", m.last_name) AS manager 
      FROM employees 
-     LEFT JOIN roles ON employees.role_id = roles.id 
+     LEFT JOIN roles ON employees.roles_id = roles.id 
      LEFT JOIN department ON roles.department_id = department.id 
      LEFT JOIN employees m ON employees.manager_id = m.id`;
     db.query(query, (err, data) => {
@@ -148,7 +148,7 @@ const viewEmployeesByDept = () => {
                 const sql =
                     `SELECT employees.id AS "Employee ID", employees.first_name AS "First Name", employees.last_name AS "Last Name", roles.title AS Role, roles.salary, CONCAT(m.first_name, " ", m.last_name) AS "Manager", department.name AS Department 
                     FROM employees 
-                    LEFT JOIN roles ON employees.role_id = roles.id 
+                    LEFT JOIN roles ON employees.roles_id = roles.id 
                     LEFT JOIN department ON roles.department_id = department.id 
                     LEFT JOIN employees m ON employees.manager_id = m.id 
                     WHERE department.name = ` + db.escape(answer.department);
@@ -194,7 +194,7 @@ const viewEmployeesByManager = () => {
                 // send query to select employee data from db where first name and last name matches user selection
                 const sql = `SELECT employees.id AS "Employee ID", employees.first_name AS "First Name", employees.last_name AS "Last Name", roles.title AS "Role", roles.salary, department.name AS "Department", CONCAT(m.first_name, " ", m.last_name) AS manager
             FROM employees
-            LEFT JOIN roles ON employees.role_id = roles.id
+            LEFT JOIN roles ON employees.roles_id = roles.id
             LEFT JOIN department on roles.department_id = department.id
             LEFT JOIN employees m ON employees.manager_id = m.id
             WHERE CONCAT(m.first_name, " ", m.last_name) = ?`;
@@ -261,7 +261,7 @@ const addEmployee = () => {
                 // destructure user response
                 .then(({ firstName, lastName, role, manager }) => {
                     const query = `INSERT INTO employees
-            (first_name, last_name, role_id, manager_id)
+            (first_name, last_name, roles_id, manager_id)
             VALUE (?, ?, ?, ?);`;
                     db.query(
                         query,
@@ -351,7 +351,7 @@ const updateEmployeeRole = () => {
                 // destructure data, pass in parameters to the query string
                 .then(({ employee, role }) => {
                     const query = `UPDATE employees
-            SET role_id = ?
+            SET roles_id = ?
             WHERE id = ?`;
                     db.query(query, [role, employee], (err, data) => {
                         if (err) throw err;
@@ -403,9 +403,7 @@ const updateEmployeeManager = () => {
 };
 // view all roles
 const viewAllRoles = () => {
-    const query = `SELECT roles.id, roles.title AS "Roles", roles.salary, department.name AS "Department"
-  FROM roles
-  LEFT JOIN department ON roles.department_id = department.id`;
+    const query = `SELECT roles.id, title, salary, department.name AS department FROM roles LEFT JOIN department ON roles.department_id = department.id`;
     db.query(query, (err, data) => {
         if (err) throw err;
         console.table(data);
