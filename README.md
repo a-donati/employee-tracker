@@ -26,13 +26,17 @@ A command line application that allows the user to manage employees within their
 From GitHub, fork or clone the repo. The user must have Node.js installed. Once forked, run `npm i` from the root directory to install required dependencies.
 
 ## Usage
-
+Walkthrough video can be found [here](https://drive.google.com/file/d/1zwqghkxwbzEmuB8_lE8xB8fnhdXsdf7-/view).
+ 
 Run `npm start` to start the application. Follow application prompts.
+
+![Employee-tracker is a command line interface application that presents the user with choices to view and manipulate data from a mySQL database.](/images/employee-tracker.gif)
 
 ## References
 
 * [Inquirer](https://www.npmjs.com/package/inquirer)
 * [mysql2](https://www.npmjs.com/package/mysql2)
+* [Console.table package](https://www.npmjs.com/package/console.table)
 
 ## License
 
