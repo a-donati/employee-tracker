@@ -48,7 +48,7 @@ const employeeSearch = () => {
                     "View all departments",
                     "Add department",
                     "Remove department",
-                    "View department budget",
+                    // "View department budget",
                     "exit",
                 ],
             },
@@ -95,9 +95,9 @@ const employeeSearch = () => {
                 case "Remove department":
                     removeDept();
                     break;
-                case "View department budget":
-                    viewBudgets();
-                    break;
+                // case "View department budget":
+                //     viewBudgets();
+                //     break;
                 case "exit":
                     // when user exits, connection to the database ends
                     db.end();
@@ -355,12 +355,13 @@ const updateEmployeeManager = () => {
                 },
             ])
             .then(({ employee, manager }) => {
-                const query = `UPDATE employee
+                const query = `UPDATE employees
             SET manager_id = ?
             WHERE id = ?`;
                 db.query(query, [manager, employee], (err, data) => {
                     if (err) throw err;
                     console.log(`Employee has been updated`);
+                    employeeSearch();
                 });
             });
     });
@@ -510,4 +511,4 @@ const removeDept = () => {
     });
 };
 
-// viewBudget;
+// viewBudgets;
