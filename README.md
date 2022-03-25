@@ -16,7 +16,7 @@ A command line application that allows the user to manage employees within their
 
 - [Installation](#Installation)
 - [Usage](#Usage)
-- [Refrences](#Refrences)
+- [References](#Refrences)
 - [License](#license)
 - [Contributing](#Contributing)
 - [Questions](#Questions)
